@@ -72,6 +72,10 @@ class Graph2d:
 
         self.forces, residuals, rank, s = np.linalg.lstsq(A, -L, rcond=None)
 
+        residual_threshold = 0.1
+        if len(residuals) > 0 and residuals.item() > residual_threshold:
+            raise ValueError("Nodes could not reach equilibrium!")
+
         return self.forces
     
     def loss(self, nodes):

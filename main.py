@@ -28,4 +28,4 @@ t.add_load(3, 5, 0)
 t.add_anchor(0)
 t.add_anchor(4)
 
-t.optimize(n_frames=200, lr = 0.001, save=True, exp_name="cantilever")
+t.optimize(n_frames=200, lr = 1, save=True, exp_name="cantilever")
