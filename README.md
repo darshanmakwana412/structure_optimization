@@ -1,14 +1,16 @@
-# structure_optimization
+# Optimizing Every Structure, Everywhere, all at Once
 
-Structure optimization via strain energy minimization. This project is currently work in progress
+This project is currently work in progress
 
-Initial Bridge             |   Bridge during Optimization
-:-------------------------:|:-------------------------:
-![Initial Tower Structure](./samples/init_bridge.gif)  |  ![Optimal Tower Structure](./samples/optim_bridge.gif)
+# Ablation Studies
 
-Initial Tower             |  Tower during Optimization
-:-------------------------:|:-------------------------:
-![Initial Tower Structure](./samples/init_tower.gif)  |  ![Optimal Tower Structure](./samples/optim_tower.gif)
+Initial Bridge             |   Minimizing Force | Minimizing Strain | Minimizing Strain Energy
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+![Initial Bridge](./samples/init_bridge.gif)  |  ![Min Force Bridge](./samples/min_force_bridge.gif) | ![Min Strain Bridge](./samples/min_strain_bridge.gif) |  ![Min Strain Energy Bridge](./samples/min_strain_energy_bridge.gif)
+
+Initial Tower             |   Minimizing Force | Minimizing Strain | Minimizing Strain Energy
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+![Initial Tower](./samples/init_tower.gif)  |  ![Min Force Tower](./samples/min_force_tower.gif) | ![Min Strain Tower](./samples/min_strain_tower.gif) |  ![Min Strain Energy Tower](./samples/min_strain_energy_tower.gif)
 
 # To Do
 - [x] Create a 3D implementation of the original proposal
@@ -34,4 +36,8 @@ Initial Tower             |  Tower during Optimization
 
 ## Installation
 
-### Creating a virtual environment
+### Using Docker (Recommended)
+
+### Using Conda
+
+### Using Virtual Environment

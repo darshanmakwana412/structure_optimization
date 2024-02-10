@@ -96,6 +96,8 @@ class Graph3d:
         weights[F > 0] *= (lengths[F > 0] + fall_off) / fall_off
 
         return torch.sum(weights)
+
+        # return torch.sum(torch.abs(F))
     
     def optimize(self, n_frames, lr, save, exp_name):
 
@@ -121,17 +123,17 @@ class Graph3d:
 
             if save:
                 plt.cla()
-                self.plot(ax, nodes, i)
+                self.plot(fig, ax, nodes, i, loss.item())
                 plt.savefig(f"{frame_folder}frame_{i}.png")
 
             loss.backward()
 
-            # Update the value of x using gradient descent
-            with torch.no_grad():  # We don't want this operation to be tracked in the computation graph
-                nodes -= lr * self.mask * nodes.grad
+            # # Update the value of x using gradient descent
+            # with torch.no_grad():  # We don't want this operation to be tracked in the computation graph
+                # nodes -= lr * self.mask * nodes.grad
                 
-                # Manually zero the gradients after updating x
-                nodes.grad.zero_()
+            #     # Manually zero the gradients after updating x
+                # nodes.grad.zero_()
 
             pbar.set_description(f'Loss: {loss.item():.4f}')
 
@@ -142,7 +144,7 @@ class Graph3d:
             # imageio.mimsave(vid_path, frames, format='mp4', fps=30)
             imageio.mimsave(vid_path, frames, format='GIF', fps=30, loop=0)
     
-    def plot(self, ax, nodes, azim) -> None:
+    def plot(self, fig, ax, nodes, azim, loss) -> None:
 
         if ax is None:
             fig, ax = plt.subplots(subplot_kw={'projection': "3d"})
@@ -165,9 +167,9 @@ class Graph3d:
 
         # draw loads
         for idx, fx, fy, fz in self.loads:
-            fx /= 8
-            fy /= 8
-            fz /= 8
+            fx /= 10
+            fy /= 10
+            fz /= 10
             a = Arrow3D(
                         [xs[idx] - fx, xs[idx]], [ys[idx] - fy, ys[idx]], [zs[idx] - fz, zs[idx]],
                         mutation_scale=30, 
@@ -185,8 +187,8 @@ class Graph3d:
             
         # draw anchors
         for idx, x_constrained, y_constrained, z_constrained in self.anchors:
-            constrained_size = 0.1
-            unconstrained_size = 0.3
+            constrained_size = 0.2
+            unconstrained_size = 0.6
             width = constrained_size if x_constrained else unconstrained_size
             height = constrained_size if y_constrained else unconstrained_size
             depth = constrained_size if z_constrained else unconstrained_size
@@ -197,7 +199,7 @@ class Graph3d:
             # ax.add_patch(Rectangle(center, width, height, edgecolor="green", facecolor="green"))
         
         # draw nodes
-        plt.scatter(xs, ys, zs)
+        ax.scatter(xs, ys, zs)
         # ax.autoscale(enable=True, axis='both', tight=True)
         buffer_percent = 0.1
 
@@ -219,7 +221,8 @@ class Graph3d:
         ax.set_box_aspect([np.ptp(xs), np.ptp(ys), np.ptp(zs)])
         ax.grid(False)
         ax.view_init(elev=30, azim=azim)
-        ax.text(0.02, 0.98, 0.98, f'Iteration {azim}', transform=ax.transAxes, color='black', fontsize=12, horizontalalignment='left', verticalalignment='top')
+        # ax.text(0, 0, 0, f'Iteration: {azim}', transform=ax.transAxes, color='black', fontsize=12, horizontalalignment='left', verticalalignment='top')
+        # ax.text(0, 0, 26, f'Loss: {loss:.4f}', transform=ax.transAxes, color='black', fontsize=12, horizontalalignment='left', verticalalignment='top')
         # ax.set_zlim([min(nodes[:, 2]), max(nodes[:, 2])])
         # ax.set_box_aspect([1, 1, 1])
         # plt.axis('equal')
@@ -293,17 +296,57 @@ class Graph3d:
         
 # Bridge
         
+# nodes = []
+# for i in range(6):
+#     nodes.append([0, i, 0])
+#     nodes.append([0, i, 1])
+#     nodes.append([1, i, 0])
+#     nodes.append([1, i, 1])
+    
+# edges = []
+# for i in range(6):
+#     edges.extend([[4 * i + 0, 4 *i + 1], [4 * i + 0, 4 *i + 2], [4 * i + 1, 4 *i + 3], [4 * i + 3, 4 *i + 2], [4 * i + 0, 4 *i + 3], [4 * i + 2, 4 *i + 1]])
+# for i in range(1, 6):
+#     for j in range(4):
+#         edges.extend([[4 * (i-1) + j, 4 * i + j]])
+#     for (u1, u2) in [(0, 1), (0, 2), (1, 3), (2, 3)]:
+#         edges.extend([[4 * (i-1) + u1, 4 * i + u2]])
+#         edges.extend([[4 * (i-1) + u2, 4 * i + u1]])
+
+# nodes = np.array(nodes)
+# edges = np.array(edges)
+
+# t = Graph3d(nodes, edges)
+
+# t.add_anchor(0)
+# t.add_anchor(2)
+# t.add_anchor(20)
+# t.add_anchor(22)
+
+# t.add_load(4, 0, 0, 5)
+# t.add_load(6, 0, 0, 5)
+# t.add_load(8, 0, 0, 5)
+# t.add_load(10, 0, 0, 5)
+# t.add_load(12, 0, 0, 5)
+# t.add_load(14, 0, 0, 5)
+# t.add_load(16, 0, 0, 5)
+# t.add_load(18, 0, 0, 5)
+
+# t.optimize(n_frames=360, lr = 0.0005, save=True, exp_name="bridge")
+        
+# Tower
+        
 nodes = []
-for i in range(5):
-    nodes.append([0, i, 0])
-    nodes.append([0, i, 1])
-    nodes.append([1, i, 0])
-    nodes.append([1, i, 1])
+for i in range(6):
+    nodes.append([0, 0, i])
+    nodes.append([0, 1, i])
+    nodes.append([1, 0, i])
+    nodes.append([1, 1, i])
     
 edges = []
-for i in range(5):
+for i in range(6):
     edges.extend([[4 * i + 0, 4 *i + 1], [4 * i + 0, 4 *i + 2], [4 * i + 1, 4 *i + 3], [4 * i + 3, 4 *i + 2], [4 * i + 0, 4 *i + 3], [4 * i + 2, 4 *i + 1]])
-for i in range(1, 5):
+for i in range(1, 6):
     for j in range(4):
         edges.extend([[4 * (i-1) + j, 4 * i + j]])
     for (u1, u2) in [(0, 1), (0, 2), (1, 3), (2, 3)]:
@@ -316,15 +359,11 @@ edges = np.array(edges)
 t = Graph3d(nodes, edges)
 
 t.add_anchor(0)
+t.add_anchor(1)
 t.add_anchor(2)
-t.add_anchor(16)
-t.add_anchor(18)
+t.add_anchor(3)
 
-t.add_load(4, 0, 0, 5)
-t.add_load(6, 0, 0, 5)
-t.add_load(8, 0, 0, 5)
-t.add_load(10, 0, 0, 5)
-t.add_load(12, 0, 0, 5)
-t.add_load(14, 0, 0, 5)
+t.add_load(20, 5, 5, 0)
+t.add_load(22, -5, 5, 0)
 
-t.optimize(n_frames=360, lr = 0.001, save=True, exp_name="bridge")
+t.optimize(n_frames=360, lr = 0.00005, save=True, exp_name="tower")
