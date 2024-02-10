@@ -36,7 +36,29 @@ Initial Tower             |   Minimizing Force | Minimizing Strain | Minimizing 
 
 ## Installation
 
-### Using Docker (Recommended)
+**Clone this repository:**
+
+```bash
+git clone https://github.com/darshanmakwana412/structure_optimization.git
+cd structure_optimization
+```
+
+### Using Docker (Recommended):
+
+1. **Build the Docker image:**
+
+    Run the following command to build the Docker image:
+
+    ```bash
+    docker build -t struct_optim .
+    ```
+
+2. **Run the Docker container:**
+
+    Execute the following command to run the Docker container:
+    ```bash
+    docker run --gpus all struct_optim
+    ```
 
 ### Using Conda
 
