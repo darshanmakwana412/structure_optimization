@@ -70,11 +70,11 @@ class Graph2d:
                 A = A.at[idx * 2 + 1, :].set(0.0)
                 L = L.at[idx * 2 + 1].add(0.0)
 
-        self.forces, residuals, rank, s = np.linalg.lstsq(A, -L, rcond=None)
+        self.forces, residuals, rank, s = np.linalg.lstsq(A.T @ A, -1 * A.T @ L, rcond=None)
 
-        residual_threshold = 0.1
-        if len(residuals) > 0 and residuals.item() > residual_threshold:
-            raise ValueError("Nodes could not reach equilibrium!")
+        # residual_threshold = 0.1
+        # if len(residuals) > 0 and residuals.item() > residual_threshold:
+        #     raise ValueError("Nodes could not reach equilibrium!")
 
         return self.forces
     
@@ -90,14 +90,15 @@ class Graph2d:
         weights = np.zeros_like(lengths)
 
         # beams in tension
-        weights = lengths * np.abs(F)
+        # weights = lengths * np.abs(F)
+        weights = np.linalg.norm(F) ** 2
 
         # compression
-        fall_off = 3.0
+        # fall_off = 3.0
         # weights[F > 0] *= (lengths[F > 0] + fall_off) / fall_off
-        for idx, f in enumerate(F):
-            if f > 0:
-                weights = weights.at[idx].multiply((lengths[idx] + fall_off)/fall_off)
+        # for idx, f in enumerate(F):
+            # if f > 0:
+                # weights = weights.at[idx].multiply((lengths[idx] + fall_off)/fall_off)
         # weights = weights.at[F > 0].multiply((lengths[F > 0] + fall_off) / fall_off)
 
         return np.sum(weights)
