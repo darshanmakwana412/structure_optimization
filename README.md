@@ -2,8 +2,13 @@
 
 Structure optimization via strain energy minimization. This project is currently work in progress
 
-![Initial Tower Structure](./samples/init_tower.gif)
-![Optimal Tower Structure](./samples/optim_tower.gif)
+Initial Bridge             |   Bridge during Optimization
+:-------------------------:|:-------------------------:
+![Initial Tower Structure](./samples/init_bridge.gif)  |  ![Optimal Tower Structure](./samples/optim_bridge.gif)
+
+Initial Tower             |  Tower during Optimization
+:-------------------------:|:-------------------------:
+![Initial Tower Structure](./samples/init_tower.gif)  |  ![Optimal Tower Structure](./samples/optim_tower.gif)
 
 # To Do
 - [x] Create a 3D implementation of the original proposal

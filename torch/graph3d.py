@@ -118,6 +118,12 @@ class Graph3d:
         for i in pbar:
 
             loss = self.loss(nodes)
+
+            if save:
+                plt.cla()
+                self.plot(ax, nodes, i)
+                plt.savefig(f"{frame_folder}frame_{i}.png")
+
             loss.backward()
 
             # Update the value of x using gradient descent
@@ -126,11 +132,6 @@ class Graph3d:
                 
                 # Manually zero the gradients after updating x
                 nodes.grad.zero_()
-
-            if save:
-                plt.cla()
-                self.plot(ax, nodes, i)
-                plt.savefig(f"{frame_folder}frame_{i}.png")
 
             pbar.set_description(f'Loss: {loss.item():.4f}')
 
@@ -155,7 +156,7 @@ class Graph3d:
             segments = [np.array([[xs[i], ys[i], zs[i]], [xs[j], ys[j], zs[j]]])]
             line = Line3DCollection(
                 segments,
-                linewidths=abs(f[0]) + 0.1,
+                linewidths=abs(f[0]/1.2) + 0.1,
                 colors=f'{color}',
                 zorder=-1,
                 alpha=1.0
@@ -196,7 +197,7 @@ class Graph3d:
             # ax.add_patch(Rectangle(center, width, height, edgecolor="green", facecolor="green"))
         
         # draw nodes
-        # plt.scatter(xs, ys, zs)
+        plt.scatter(xs, ys, zs)
         # ax.autoscale(enable=True, axis='both', tight=True)
         buffer_percent = 0.1
 
@@ -224,66 +225,106 @@ class Graph3d:
         # plt.axis('equal')
         # ax.autoscale(enable=True)
 
-nodes = np.array([
-    (0.0, 0.0, 0.0),
-    (1.0, 0.0, 0.0),
-    (0.0, 1.0, 0.0),
-    (1.0, 1.0, 0.0),
-    (0.0, 0.0, 1.0),
-    (1.0, 0.0, 1.0),
-    (0.0, 1.0, 1.0),
-    (1.0, 1.0, 1.0),
-    (0.0, 0.0, 2.0),
-    (1.0, 0.0, 2.0),
-    (0.0, 1.0, 2.0),
-    (1.0, 1.0, 2.0),
-    (0.0, 0.0, 3.0),
-    (1.0, 0.0, 3.0),
-    (0.0, 1.0, 3.0),
-    (1.0, 1.0, 3.0)
-])
-edges = [
-    # (0, 1), (0, 2), (1, 3), (2, 3),
-    (4, 5), (4, 6), (5, 7), (6, 7),
-    (0, 4), (1, 5), (2, 6), (3, 7),
-    (8, 9), (8, 10), (9, 11), (10, 11),
-    (12, 13), (12, 14), (13, 15), (14, 15),
-    (8, 12), (9, 13), (10, 14), (11, 15),
-    (4, 8), (5, 9), (7, 11), (6, 10),
-    (0, 5), (2, 4), (1, 4), (0, 6), (1, 7), (5, 3), (6, 3), (7, 2)
-]
-cross = [(0, 5), (2, 4), (1, 4), (0, 6), (1, 7), (5, 3), (6, 3), (7, 2)]
-for (ci, cj) in cross:
-    edges.append((ci + 4, cj + 4))
-for (ci, cj) in cross:
-    edges.append((ci + 8, cj + 8))
-edges.append((12, 15))
-edges.append((13, 14))
-edges.append((8, 11))
-edges.append((9, 10))
-edges.append((4, 7))
-edges.append((5, 6))
+# Tower
+
+# nodes = np.array([
+#     (0.0, 0.0, 0.0),
+#     (1.0, 0.0, 0.0),
+#     (0.0, 1.0, 0.0),
+#     (1.0, 1.0, 0.0),
+#     (0.0, 0.0, 1.0),
+#     (1.0, 0.0, 1.0),
+#     (0.0, 1.0, 1.0),
+#     (1.0, 1.0, 1.0),
+#     (0.0, 0.0, 2.0),
+#     (1.0, 0.0, 2.0),
+#     (0.0, 1.0, 2.0),
+#     (1.0, 1.0, 2.0),
+#     (0.0, 0.0, 3.0),
+#     (1.0, 0.0, 3.0),
+#     (0.0, 1.0, 3.0),
+#     (1.0, 1.0, 3.0)
+# ])
+# edges = [
+#     # (0, 1), (0, 2), (1, 3), (2, 3),
+#     (4, 5), (4, 6), (5, 7), (6, 7),
+#     (0, 4), (1, 5), (2, 6), (3, 7),
+#     (8, 9), (8, 10), (9, 11), (10, 11),
+#     (12, 13), (12, 14), (13, 15), (14, 15),
+#     (8, 12), (9, 13), (10, 14), (11, 15),
+#     (4, 8), (5, 9), (7, 11), (6, 10),
+#     (0, 5), (2, 4), (1, 4), (0, 6), (1, 7), (5, 3), (6, 3), (7, 2)
+# ]
+# cross = [(0, 5), (2, 4), (1, 4), (0, 6), (1, 7), (5, 3), (6, 3), (7, 2)]
+# for (ci, cj) in cross:
+#     edges.append((ci + 4, cj + 4))
+# for (ci, cj) in cross:
+#     edges.append((ci + 8, cj + 8))
+# edges.append((12, 15))
+# edges.append((13, 14))
+# edges.append((8, 11))
+# edges.append((9, 10))
+# edges.append((4, 7))
+# edges.append((5, 6))
+# edges = np.array(edges)
+
+# t = Graph3d(nodes, edges)
+
+# t.add_anchor(0)
+# t.add_anchor(1)
+# t.add_anchor(2)
+# t.add_anchor(3)
+
+# # t.add_load(4, 1, 2, 10)
+# # t.add_load(5, 7, -5, 6)
+# # t.add_load(15, -4, -4, 4)
+# # t.add_load(11, -4, -4, 4)
+# # t.add_load(9, -4, -4, 4)
+
+# t.add_load(12, 5, 5, 0)
+# t.add_load(13, -5, 5, 0)
+
+# # F = t.calculate_forces(nodes)
+# # print(F)
+# # grads = grad(t.loss)(nodes)
+# # print(grads)
+
+# t.optimize(n_frames=360, lr = 0.001, save=True, exp_name="tower")
+        
+# Bridge
+        
+nodes = []
+for i in range(5):
+    nodes.append([0, i, 0])
+    nodes.append([0, i, 1])
+    nodes.append([1, i, 0])
+    nodes.append([1, i, 1])
+    
+edges = []
+for i in range(5):
+    edges.extend([[4 * i + 0, 4 *i + 1], [4 * i + 0, 4 *i + 2], [4 * i + 1, 4 *i + 3], [4 * i + 3, 4 *i + 2], [4 * i + 0, 4 *i + 3], [4 * i + 2, 4 *i + 1]])
+for i in range(1, 5):
+    for j in range(4):
+        edges.extend([[4 * (i-1) + j, 4 * i + j]])
+    for (u1, u2) in [(0, 1), (0, 2), (1, 3), (2, 3)]:
+        edges.extend([[4 * (i-1) + u1, 4 * i + u2]])
+        edges.extend([[4 * (i-1) + u2, 4 * i + u1]])
+
+nodes = np.array(nodes)
 edges = np.array(edges)
 
 t = Graph3d(nodes, edges)
 
 t.add_anchor(0)
-t.add_anchor(1)
 t.add_anchor(2)
-t.add_anchor(3)
+t.add_anchor(16)
+t.add_anchor(18)
 
-# t.add_load(4, 1, 2, 10)
-# t.add_load(5, 7, -5, 6)
-# t.add_load(15, -4, -4, 4)
-# t.add_load(11, -4, -4, 4)
-# t.add_load(9, -4, -4, 4)
+t.add_load(4, 0, 0, 5)
+t.add_load(6, 0, 0, 5)
+t.add_load(8, 0, 0, 5)
+t.add_load(10, 0, 0, 5)
+t.add_load(12, 0, 0, 5)
+t.add_load(14, 0, 0, 5)
 
-t.add_load(12, 5, 5, 0)
-t.add_load(13, -5, 5, 0)
-
-# F = t.calculate_forces(nodes)
-# print(F)
-# grads = grad(t.loss)(nodes)
-# print(grads)
-
-t.optimize(n_frames=360, lr = 0.001, save=True, exp_name="tower")
+t.optimize(n_frames=360, lr = 0.001, save=True, exp_name="bridge")
