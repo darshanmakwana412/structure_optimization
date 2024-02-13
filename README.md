@@ -12,6 +12,12 @@ Initial Tower             |   Minimizing Force | Minimizing Strain | Minimizing 
 :-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
 ![Initial Tower](./samples/init_tower.gif)  |  ![Min Force Tower](./samples/min_force_tower.gif) | ![Min Strain Tower](./samples/min_strain_tower.gif) |  ![Min Strain Energy Tower](./samples/min_strain_energy_tower.gif)
 
+# Experiments
+
+## Branchistochrone Problem
+The branchistochrone problem is the problem of finding a curve of shortest descent between two points, we assign a cost to each link as the total time it takes for a particle to travel it
+![Branchistochrone Curve](./samples/bran.gif)
+
 # To Do
 - [x] Create a 3D implementation of the original proposal
 - [ ] Update Installtion instructions in the README
