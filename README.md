@@ -33,7 +33,7 @@ The branchistochrone problem is the problem of finding a curve of shortest desce
 # Experiments to Perform
 - [x] Create a tower and apply two forces on the top
 - [ ] Add an additional constraint for volume minimization in the loss function, current hypothesis is that when opimized with gravity the structure will resemble a honeycomb
-- [ ] Optimize bridges
+- [x] Optimize bridges
 - [ ] Create an infinite grid and simulate a hand punching in it
 
 ## Useful References
