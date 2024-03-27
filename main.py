@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from src.graph2d import Graph2d
-import jax.numpy as np
+import numpy as np
 
 nodes = np.array([
     (0.0, 0.0),

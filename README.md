@@ -18,6 +18,18 @@ Initial Tower             |   Minimizing Force | Minimizing Strain | Minimizing 
 The branchistochrone problem is the problem of finding a curve of shortest descent between two points, we assign a cost to each link as the total time it takes for a particle to travel it
 ![Branchistochrone Curve](./samples/bran.gif)
 
+# Evolution of Topologies
+
+Generation 10             |   Generation 20 | Generation 30 | Generation 40
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+![Initial Bridge](./samples/evo_bridge/nt_8.gif)  |  ![Min Force Bridge](./samples/evo_bridge/nt_6.gif) | ![Min Strain Bridge](./samples/evo_bridge/nt_10.gif) |  ![Min Strain Energy Bridge](./samples/evo_bridge/nt_5.gif)
+
+Population 50             |   Population 60 | Population 70 | Population 80
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+![Initial Bridge](./samples/evo_bridge/nt_7.gif)  |  ![Min Force Bridge](./samples/evo_bridge/nt3.gif) | ![Min Strain Bridge](./samples/evo_bridge/nt_4.gif) |  ![Min Strain Energy Bridge](./samples/evo_bridge/nt_1.gif)
+
+Total Simulation Time: 41 Hours
+
 # To Do
 - [x] Create a 3D implementation of the original proposal
 - [ ] Update Installtion instructions in the README

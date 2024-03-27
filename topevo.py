@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -5,6 +7,13 @@ import numpy as np
 import imageio
 import torch
 import os
+
+'''
+To DO:
+    - [ ] Use Pytorch optimizer for updating the nodes
+    - [ ] Implement a learning rate scheduler
+    - [ ] Optimize the lr scheduler
+'''
 
 device = (
     "cuda" if torch.cuda.is_available()
@@ -18,20 +27,19 @@ class Graph2d:
         self.N = len(nodes)
         self.M = len(edges)
 
-        self.nodes = torch.tensor(nodes, dtype=torch.float32, requires_grad=True)
+        self.original_nodes = [torch.tensor(node, requires_grad=False, dtype=torch.float32) for node in nodes]
+        self.nodes = [torch.tensor(node, requires_grad=True, dtype=torch.float32) for node in nodes]
         self.edges = edges
         self.loads = []
         self.anchors = []
 
-        self.mask = torch.ones_like(self.nodes)
-
     def add_load(self, idx: int, fx: float = 0, fy: float = 0):
         self.loads.append((idx, fx, fy))
-        self.mask[idx, :] = torch.tensor([0, 0])
+        self.nodes[idx].requires_grad = True
 
     def add_anchor(self, idx: int, sx: bool = True, sy: bool = True):
         self.anchors.append((idx, sx, sy))
-        self.mask[idx, :] = torch.tensor([not sx, not sy])
+        self.nodes[idx].requires_grad = False
 
     def proj(self, dx, dy):
         hypot = torch.sqrt(dx ** 2 + dy ** 2)
@@ -72,10 +80,15 @@ class Graph2d:
         #     raise ValueError("Nodes could not reach equilibrium!")
 
         return self.forces
+
+    def norm(self, n1, n2):
+        return torch.linalg.norm(n1 - n2)
     
     def loss(self, nodes):
 
         F = self.calculate_forces(nodes)
+
+        loss = torch.sum(torch.abs(F))
 
         lengths = torch.zeros_like(F)
         for i, (n1, n2) in enumerate(self.edges):
@@ -90,9 +103,16 @@ class Graph2d:
         fall_off = 3.0
         weights[F > 0] *= (lengths[F > 0] + fall_off) / fall_off
 
-        return torch.sum(weights)
+        loss = torch.sum(weights)
 
-        # return torch.sum(torch.abs(F))
+        # Don't want the anchor points to wobble a lot
+        for idx, fx, fy in self.loads:
+            loss += 100 * self.norm(nodes[idx], self.original_nodes[idx])
+
+        for idx, sx, sy in self.anchors:
+            loss += 100 * self.norm(nodes[idx], self.original_nodes[idx])
+
+        return loss
     
     def optimize(self, n_frames, lr, save, exp_name):
 
@@ -110,10 +130,16 @@ class Graph2d:
 
         nodes = self.nodes
 
+        # Define the optimizer
+        params = [n for n in self.nodes if n.requires_grad]
+        optimizer = torch.optim.Adam(params, lr=lr)
+        # Define the learning rate scheduler
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.8)
+
         pbar = tqdm(range(n_frames))
-        # loss = self.loss(nodes)
         for i in pbar:
 
+            optimizer.zero_grad()  # Zero the gradients at the start of each loop
             loss = self.loss(nodes)
             loss = torch.sum(loss)
 
@@ -124,14 +150,15 @@ class Graph2d:
 
             loss.backward()
 
-            # # Update the value of x using gradient descent
-            with torch.no_grad():  # We don't want this operation to be tracked in the computation graph
-                nodes -= lr * self.mask * nodes.grad
-                
-            #     # Manually zero the gradients after updating x
-                nodes.grad.zero_()
+            # Update the nodes using the optimizer
+            optimizer.step()
 
-            pbar.set_description(f'Loss: {loss.item():.4f}')
+            # Apply the learning rate scheduler
+            scheduler.step()
+
+            # Update tqdm description with loss and current learning rate
+            current_lr = scheduler.get_last_lr()[0]  # Get the last learning rate
+            pbar.set_description(f'Loss: {loss.item():.4f} LR: {current_lr:.5f}')
 
         if save:
             frames = []
@@ -182,3 +209,132 @@ class Graph2d:
             ax.add_patch(Rectangle(center, width, height, edgecolor="green", facecolor="green"))
 
         plt.scatter(x=xs, y=ys, s=1)
+
+# nodes = np.array([
+#     (0.0, 0.0),
+#     (0.0, 1.0), 
+#     (1.0, 0.0),
+#     (1.0, 1.0), 
+#     (2.0, 0.0),
+#     (2.0, 1.0), 
+#     (3.0, 0.0),
+#     (3.0, 1.0), 
+#     (4.0, 0.0),
+#     (4.0, 1.0), 
+#     (0.0, 2.0),
+#     (1.0, 2.0),
+#     (2.0, 2.0),
+#     (3.0, 2.0),
+#     (4.0, 2.0)
+# ])
+# edges = np.array((
+#     (0,2), (2,4), (4,6), (6,8),
+#     (1,3), (3,5), (5,7), (7,9),
+#     (0,1), (2,3), (4,5), (6,7), (8,9),
+#     (0,3), (2,5), (5,6), (7,8),
+#     (1,2),(3,4),(4,7),(6,9),
+#     (1, 10), (3, 11), (5, 12), (7, 13), (9, 14),
+#     (10, 11), (11, 12), (12, 13), (13, 14),
+#     (10, 3), (11, 1), (12, 7), (13, 5), (14, 7), (13, 9), (3, 12), (5, 11)
+# ))
+
+# nodes = np.array([
+#     (0.0, 0.0),
+#     (1.0, 0.0),
+#     (2.0, 0.0),
+#     (3.0, 0.0),
+#     (4.0, 0.0),
+#     (0.0, 1.0)
+# ])
+# edges = []
+# for i in range(len(nodes) - 1):
+#     edges.append((i, 5))
+# edges = np.array(edges)
+
+# t = Graph2d(nodes, edges)
+
+# t.add_load(2, 0, -5)
+# t.add_load(4, 0, -5)
+# t.add_load(6, 0, -5)
+
+# t.add_anchor(0)
+# t.add_anchor(8)
+
+# t.optimize(n_frames=200, lr = 0.005, save=True, exp_name="beam")
+
+nodes = np.array([
+    (0.0, 0.0),
+    (0.0, 1.0), 
+    (1.0, 0.0),
+    (1.0, 1.0), 
+    (2.0, 0.0),
+    # (2.0, 1.0), 
+    (3.0, 0.0),
+    (3.0, 1.0), 
+    (4.0, 0.0),
+    (4.0, 1.0),
+])
+
+edges = []
+for idx1, n1 in enumerate(nodes):
+    for idx2, n2 in enumerate(nodes):
+        if not (n1[0] == n2[0] and n1[1] == n2[1]):
+            edges.append((idx1, idx2))
+edges = np.array(edges)
+
+t = Graph2d(nodes, edges)
+
+t.add_load(2, 0, -5)
+t.add_load(4, 0, -5)
+t.add_load(5, 0, -5)
+
+t.add_anchor(0)
+t.add_anchor(7)
+
+t.optimize(n_frames=200, lr = 0.005, save=True, exp_name="nt_1")
+
+class Genome:
+    def __init__(self, genome_idx: int) -> None:
+        self.genome_idx = genome_idx
+        self.num_nodes = 0
+        self.nodes = {}
+        self.edges = []
+
+    def add_node(self, x: float, y: float) -> None:
+        # Check if the node is already in the genome
+        if (x, y) not in self.nodes.values():
+            idx = self.num_nodes
+            self.nodes[idx] = (x, y)
+            self.num_nodes += 1
+        else:
+            print(f"Adding node ({x}, {y}) to genome {self.genome_idx} would create a duplicate node!")
+
+    def add_edge(self, idx1: int, idx2: int) -> None:
+        self.edges.append((idx1, idx2))
+
+# g1 = Genome(0)
+# g1.add_node(0, 0)
+# g1.add_node(0, 1)
+# g1.add_node(1, 0)
+# g1.add_node(1, 1)
+# g1.add_node(2, 0)
+# g1.add_node(2, 1)
+# g1.add_node(3, 0)
+# g1.add_node(3, 1)
+# g1.add_node(4, 0)
+# g1.add_node(4, 1)
+# g1.add_node(0, 0)
+
+# g1.add_edge(0, 1)
+# g1.add_edge(1, 2)
+# g1.add_edge(2, 3)
+# g1.add_edge(3, 4)
+# g1.add_edge(4, 5)
+# g1.add_edge(5, 6)
+# g1.add_edge(6, 7)
+# g1.add_edge(7, 8)
+# g1.add_edge(8, 9)
+# g1.add_edge(9, 0)
+
+# print(g1.nodes)
+# print(g1.edges)
