@@ -1,0 +1,22 @@
+body {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+#controls {
+    margin-bottom: 20px;
+}
+
+#canvas-container {
+    border: 1px solid #ccc;
+    width: 600px;
+    height: 600px;
+}
+
+#networkCanvas {
+    width: 100%;
+    height: 100%;
+}
